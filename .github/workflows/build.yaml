@@ -1,0 +1,26 @@
+name: Build
+on: push
+
+jobs:
+  build:
+    name: Build GNOME Stack
+    runs-on: windows-latest
+    steps:
+    - name: Setup Meson
+      run: pip install meson ninja
+    - name: Setup pkg-config
+      run: |
+        mkdir tools
+        python -c "import urllib.request, sys; urllib.request.urlretrieve(*sys.argv[1:])" "https://nirbheek.in/files/binaries/pkg-config/win32/pkg-config.exe" tools/pkg-config.exe
+        echo "$env:GITHUB_WORKSPACE/tools" >> $env:GITHUB_PATH
+    - name: Fetch GTK
+      run: git clone https://gitlab.gnome.org/GNOME/gtk.git --depth 1
+    - name: Build GTK
+      working-directory: ./gtk
+      run: |
+        meson setup builddir --prefix="$env:GITHUB_WORKSPACE/install" --buildtype=release -Dbuild-tests=false -Dmedia-gstreamer=disabled
+        meson install -C builddir
+    - uses: actions/upload-artifact@v3
+      with:
+        name: gtk-msvc-release
+        path: ${{ github.workspace }}/install
