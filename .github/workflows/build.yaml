@@ -52,7 +52,7 @@ jobs:
         curl -L -O "$env:GI_RELEASE"
         cmake -E tar xvf "$env:GI.tar.xz"
         cd "$env:GI"
-        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dbuild-tests=false
+        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release
         meson install -C builddir
     # build librsvg
     # .. build libxml2
