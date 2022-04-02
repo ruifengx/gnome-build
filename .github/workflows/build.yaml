@@ -69,7 +69,7 @@ jobs:
       run: |
         curl -L -O "$env:LIBXML2_RELEASE"
         cmake -E tar xf "$env:LIBXML2.tar.xz"
-        cmake -S "$env:LIBXML2" -B "$env:LIBXML2/build" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="$env:INSTALL_PATH" -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF
+        cmake -S "$env:LIBXML2" -B "$env:LIBXML2/build" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="$env:INSTALL_PATH" -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_ZLIB=OFF
         cmake --build "$env:LIBXML2/build" --config Release
         cmake --install "$env:LIBXML2/build"
         cp "$env:INSTALL_PATH/lib/libxml2s.lib" "$env:INSTALL_PATH/lib/libxml2.lib"
