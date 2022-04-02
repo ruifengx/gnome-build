@@ -72,7 +72,8 @@ jobs:
         cmake -S "$env:LIBXML2" -B "$env:LIBXML2/build" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="$env:INSTALL_PATH" -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF
         cmake --build "$env:LIBXML2/build" --config Release
         cmake --install "$env:LIBXML2/build"
-        cp "$env:INSTALL_PATH/lib/libxml2.lib" "$env:INSTALL_PATH/lib/xml2.lib"
+        cp "$env:INSTALL_PATH/lib/libxml2s.lib" "$env:INSTALL_PATH/lib/libxml2.lib"
+        cp "$env:INSTALL_PATH/lib/libxml2s.lib" "$env:INSTALL_PATH/lib/xml2.lib"
     # .. build librsvg
     - name: Fetch and Build librsvg
       run: |
