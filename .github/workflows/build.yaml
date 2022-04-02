@@ -5,6 +5,9 @@ env:
   # shared paths for all builds
   TOOLS_PATH: ${{ github.workspace }}/tools
   INSTALL_PATH: ${{ github.workspace }}/install
+  PKG_CONFIG_PATH: ${{ github.workspace }}/install/lib/pkgconfig
+  INCLUDE: ${{ github.workspace }}/install/include
+  LIBPATH: ${{ github.workspace }}/install/lib
   # tools: pkg-config, win_flex_bison
   PKG_CONFIG_RELEASE: https://nirbheek.in/files/binaries/pkg-config/win32/pkg-config.exe
   WIN_FLEX_BISON_RELEASE: https://github.com/lexxmark/winflexbison/releases/download/v2.5.14/win_flex_bison-2.5.14.zip
@@ -30,7 +33,6 @@ jobs:
         curl "$env:PKG_CONFIG_RELEASE" -o tools/pkg-config.exe
         echo "$env:TOOLS_PATH" >> $env:GITHUB_PATH
         echo "$env:INSTALL_PATH/bin" >> $env:GITHUB_PATH
-        echo "PKG_CONFIG_PATH=$env:INSTALL_PATH/lib/pkgconfig" >> $env:GITHUB_ENV
     - name: Setup win_flex_bison
       run: |
         curl -L "$env:WIN_FLEX_BISON_RELEASE" -o tools/win_flex_bison.zip
