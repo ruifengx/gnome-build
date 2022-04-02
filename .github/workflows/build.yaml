@@ -76,11 +76,19 @@ jobs:
         cp "$env:INSTALL_PATH/lib/libxml2s.lib" "$env:INSTALL_PATH/lib/xml2.lib"
     # .. build librsvg
     - name: Fetch and Build librsvg
+      env:
+        LIBRSVG_PATH: ${{ github.workspace }}/${{ env.LIBRSVG }}
       run: |
         curl -L -O "$env:LIBRSVG_RELEASE"
         cmake -E tar xf "$env:LIBRSVG.tar.xz"
-        cd "$env:LIBRSVG/win32"
-        nmake /f Makefile.vc CFG=release install PREFIX="$env:INSTALL_PATH"
+        cd "$env:LIBRSVG"
+        cargo build --release
+        cp target/release/librsvg.lib $env:INSTALL_PATH/lib/librsvg.lib
+        cp win32/config.h.win32 include/config.h
+        cd gdk-pixbuf-loader
+        cl /Fe:pixbufloader-svg /MD /I$env:LIBRSVG_PATH/include /I$env:INSTALL_PATH/include /I$env:INSTALL_PATH/include/gtk-4.0 /I$env:INSTALL_PATH/include/pango-1.0 /I$env:INSTALL_PATH/include/glib-2.0 /I$env:INSTALL_PATH/lib/glib-2.0/include /I$env:INSTALL_PATH/include/cairo /I$env:INSTALL_PATH/include/gdk-pixbuf-2.0 /I$env:INSTALL_PATH/include/graphene-1.0 /I$env:INSTALL_PATH/lib/graphene-1.0/include /O2 /utf-8 io-svg.c /DGDK_PIXBUF_ENABLE_BACKEND /LD gdk_pixbuf-2.0.lib glib-2.0.lib gobject-2.0.lib librsvg.lib pango-1.0.lib cairo.lib gio-2.0.lib cairo-gobject.lib pangocairo-1.0.lib xml2.lib /link /LIBPATH:$env:INSTALL_PATH/lib ws2_32.lib bcrypt.lib advapi32.lib userenv.lib
+        cp pixbufloader-svg.lib $env:INSTALL_PATH
+        cp pixbufloader-svg.dll $env:INSTALL_PATH
     # finish build and upload artifact
     - uses: actions/upload-artifact@v3
       with:
