@@ -1,30 +1,78 @@
 name: Build
 on: push
 
+env:
+  # shared paths for all builds
+  TOOLS_PATH: ${{ github.workspace }}/tools
+  INSTALL_PATH: ${{ github.workspace }}/install
+  # tools: pkg-config, win_flex_bison
+  PKG_CONFIG_RELEASE: https://nirbheek.in/files/binaries/pkg-config/win32/pkg-config.exe
+  WIN_FLEX_BISON_RELEASE: https://github.com/lexxmark/winflexbison/releases/download/v2.5.14/win_flex_bison-2.5.14.zip
+  # libraries to build
+  GI_RELEASE: https://download.gnome.org/sources/gobject-introspection/1.72/gobject-introspection-1.72.0.tar.xz
+  GI: gobject-introspection-1.72.0
+  LIBXML2_RELEASE: https://download.gnome.org/sources/libxml2/2.9/libxml2-2.9.13.tar.xz
+  LIBXML2: libxml2-2.9.13
+  LIBRSVG_RELEASE: https://download.gnome.org/sources/librsvg/2.54/librsvg-2.54.0.tar.xz
+  LIBRSVG: librsvg-2.54.0
+
 jobs:
   build:
     name: Build GNOME Stack
     runs-on: windows-latest
     steps:
+    # tools setup: meson, pkg-config, win_flex_bison, MSVC
     - name: Setup Meson
       run: pip install meson ninja
     - name: Setup pkg-config
       run: |
         mkdir tools
-        python -c "import urllib.request, sys; urllib.request.urlretrieve(*sys.argv[1:])" "https://nirbheek.in/files/binaries/pkg-config/win32/pkg-config.exe" tools/pkg-config.exe
-        echo "$env:GITHUB_WORKSPACE/tools" >> $env:GITHUB_PATH
+        curl "$env:PKG_CONFIG_RELEASE" -o tools/pkg-config.exe
+        echo "$env:TOOLS_PATH" >> $env:GITHUB_PATH
+        echo "$env:INSTALL_PATH/bin" >> $env:GITHUB_PATH
+        echo "PKG_CONFIG_PATH=$env:INSTALL_PATH/lib/pkgconfig" >> $env:GITHUB_ENV
+    - name: Setup win_flex_bison
+      run: |
+        curl "$env:WIN_FLEX_BISON_RELEASE" -o tools/win_flex_bison.zip
+        cmake -E tar xvf tools/win_flex_bison.zip tools/win_flex_bison
+        echo "$env:TOOLS_PATH/win_flex_bison" >> $env:GITHUB_PATH
     - name: Prepare MSVC
       uses: bus1/cabuild/action/msdevshell@v1
       with:
         architecture: x64
-    - name: Fetch GTK
-      run: git clone https://gitlab.gnome.org/GNOME/gtk.git --depth 1
-    - name: Build GTK
-      working-directory: ./gtk
+    # build GTK bundle
+    - name: Fetch and Build GTK
       run: |
-        meson setup builddir --prefix="$env:GITHUB_WORKSPACE/install" --buildtype=release -Dbuild-tests=false -Dmedia-gstreamer=disabled
+        git clone https://gitlab.gnome.org/GNOME/gtk.git --depth 1 && cd gtk
+        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dbuild-tests=false -Dmedia-gstreamer=disabled
         meson install -C builddir
+    # build gobject-introspecction
+    - name: Fetch and Build gobject-introspection
+      run: |
+        curl -O "$env:GI_RELEASE"
+        cmake -E tar xvf "$env:GI.tar.xz"
+        cd "$env:GI"
+        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dbuild-tests=false
+        meson install -C builddir
+    # build librsvg
+    # .. build libxml2
+    - name: Fetch and Build libxml2
+      run: |
+        curl -O "$env:LIBXML2_RELEASE"
+        cmake -E tar xvf "$env:LIBXML2.tar.xz"
+        cmake -S "$env:LIBXML2" -B "$env:LIBXML2/build" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="$env:INSTALL_PATH"
+        cmake --build "$env:LIBXML2/build" --config Release
+        cmake --install "$env:LIBXML2/build"
+        cp "$env:INSTALL_PATH/lib/libxml2.lib" "$env:INSTALL_PATH/lib/xml2.lib"
+    # .. build librsvg
+    - name: Fetch and Build librsvg
+      run: |
+        curl -O "$env:LIBRSVG_RELEASE"
+        cmake -E tar xvf "$env:LIBRSVG.tar.xz"
+        cd "$env:LIBRSVG/win32"
+        nmake /f Makefile.vc CFG=release install PREFIX="$env:INSTALL_PATH"
+    # finish build and upload artifact
     - uses: actions/upload-artifact@v3
       with:
         name: gtk-msvc-release
-        path: ${{ github.workspace }}/install
+        path: ${{ env.INSTALL_PATH }}
