@@ -27,7 +27,7 @@ jobs:
     steps:
     # tools setup: meson, pkg-config, win_flex_bison, MSVC
     - name: Setup Meson
-      run: pip install meson ninja
+      run: pip install --upgrade meson==0.58.2 ninja
     - name: Setup pkg-config
       run: |
         mkdir tools
