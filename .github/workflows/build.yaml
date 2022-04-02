@@ -43,19 +43,21 @@ jobs:
       uses: bus1/cabuild/action/msdevshell@v1
       with:
         architecture: x64
-    # build GTK bundle
-    - name: Fetch and Build GTK
-      run: |
-        git clone https://gitlab.gnome.org/GNOME/gtk.git --depth 1 && cd gtk
-        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dbuild-tests=false -Dmedia-gstreamer=disabled
-        meson install -C builddir
     # build gobject-introspecction
     - name: Fetch and Build gobject-introspection
+      env:
+        PKG_CONFIG_PATH: ${{ github.workspace }}\${{ env.GI }}\builddir\meson-uninstalled
       run: |
         curl -L -O "$env:GI_RELEASE"
         cmake -E tar xf "$env:GI.tar.xz"
         cd "$env:GI"
         meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release
+        meson install -C builddir
+    # build GTK bundle
+    - name: Fetch and Build GTK
+      run: |
+        git clone https://gitlab.gnome.org/GNOME/gtk.git --depth 1 && cd gtk
+        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dbuild-tests=false -Dmedia-gstreamer=disabled
         meson install -C builddir
     # build librsvg
     # .. build libxml2
