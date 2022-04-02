@@ -26,7 +26,8 @@ jobs:
     runs-on: windows-latest
     steps:
     # tools setup: meson, pkg-config, win_flex_bison, MSVC
-    - name: Setup Meson
+    # .. force meson 0.58.2 here because this is the version in gi's CI
+    - name: Setup Meson 0.58.2
       run: pip install --upgrade meson==0.58.2 ninja
     - name: Setup pkg-config
       run: |
@@ -53,6 +54,9 @@ jobs:
         cd "$env:GI"
         meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release
         meson install -C builddir
+    # Upgrade Meson, as required by GTK
+    - name: Setup Meson latest
+      run: pip install --upgrade meson ninja
     # build GTK bundle
     - name: Fetch and Build GTK
       run: |
