@@ -34,7 +34,7 @@ jobs:
     - name: Setup win_flex_bison
       run: |
         curl -L "$env:WIN_FLEX_BISON_RELEASE" -o tools/win_flex_bison.zip
-        cmake -E tar xvf tools/win_flex_bison.zip tools/win_flex_bison
+        python -m zipfile -e tools/win_flex_bison.zip tools/win_flex_bison
         echo "$env:TOOLS_PATH/win_flex_bison" >> $env:GITHUB_PATH
     - name: Prepare MSVC
       uses: bus1/cabuild/action/msdevshell@v1
