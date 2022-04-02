@@ -8,6 +8,7 @@ env:
   PKG_CONFIG_PATH: ${{ github.workspace }}/install/lib/pkgconfig
   INCLUDE: ${{ github.workspace }}/install/include
   LIBPATH: ${{ github.workspace }}/install/lib
+  LINK: "/LIBPATH:${{ github.workspace }}/install/lib"
   # tools: pkg-config, win_flex_bison
   PKG_CONFIG_RELEASE: https://nirbheek.in/files/binaries/pkg-config/win32/pkg-config.exe
   WIN_FLEX_BISON_RELEASE: https://github.com/lexxmark/winflexbison/releases/download/v2.5.14/win_flex_bison-2.5.14.zip
@@ -52,7 +53,7 @@ jobs:
     - name: Fetch and Build gobject-introspection
       run: |
         curl -L -O "$env:GI_RELEASE"
-        cmake -E tar xvf "$env:GI.tar.xz"
+        cmake -E tar xf "$env:GI.tar.xz"
         cd "$env:GI"
         meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release
         meson install -C builddir
@@ -61,7 +62,7 @@ jobs:
     - name: Fetch and Build libxml2
       run: |
         curl -L -O "$env:LIBXML2_RELEASE"
-        cmake -E tar xvf "$env:LIBXML2.tar.xz"
+        cmake -E tar xf "$env:LIBXML2.tar.xz"
         cmake -S "$env:LIBXML2" -B "$env:LIBXML2/build" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="$env:INSTALL_PATH"
         cmake --build "$env:LIBXML2/build" --config Release
         cmake --install "$env:LIBXML2/build"
@@ -70,7 +71,7 @@ jobs:
     - name: Fetch and Build librsvg
       run: |
         curl -L -O "$env:LIBRSVG_RELEASE"
-        cmake -E tar xvf "$env:LIBRSVG.tar.xz"
+        cmake -E tar xf "$env:LIBRSVG.tar.xz"
         cd "$env:LIBRSVG/win32"
         nmake /f Makefile.vc CFG=release install PREFIX="$env:INSTALL_PATH"
     # finish build and upload artifact
