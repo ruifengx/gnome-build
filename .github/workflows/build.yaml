@@ -13,6 +13,8 @@ env:
   PKG_CONFIG_RELEASE: https://nirbheek.in/files/binaries/pkg-config/win32/pkg-config.exe
   WIN_FLEX_BISON_RELEASE: https://github.com/lexxmark/winflexbison/releases/download/v2.5.25/win_flex_bison-2.5.25.zip
   # libraries to build
+  FREETYPE2_RELEASE: https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz
+  FREETYPE2: freetype-2.13.2
   LIBXML2_RELEASE: https://download.gnome.org/sources/libxml2/2.13/libxml2-2.13.0.tar.xz
   LIBXML2: libxml2-2.13.0
   LIBRSVG_RELEASE: https://download.gnome.org/sources/librsvg/2.58/librsvg-2.58.1.tar.xz
@@ -54,6 +56,14 @@ jobs:
         meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dbuild-tests=false -Dmedia-gstreamer=disabled -Dvulkan=disabled
         meson install -C builddir
     # build librsvg
+    # .. build freetype2
+    - name: Fetch and Build freetype2
+      run: |
+        curl -L -O "$env:FREETYPE2_RELEASE"
+        cmake -E tar xf "$env:FREETYPE2.tar.xz"
+        cd "$env:FREETYPE2"
+        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release
+        meson install -C builddir
     # .. build libxml2
     - name: Fetch and Build libxml2
       run: |
@@ -66,20 +76,12 @@ jobs:
         cp "$env:INSTALL_PATH/lib/libxml2s.lib" "$env:INSTALL_PATH/lib/xml2.lib"
     # .. build librsvg
     - name: Fetch and Build librsvg
-      env:
-        LIBRSVG_PATH: ${{ github.workspace }}/${{ env.LIBRSVG }}
       run: |
         curl -L -O "$env:LIBRSVG_RELEASE"
         cmake -E tar xf "$env:LIBRSVG.tar.xz"
         cd "$env:LIBRSVG"
-        cargo build --release
-        cp target/release/librsvg.lib $env:INSTALL_PATH/lib/librsvg.lib
-        cp win32/config.h.win32 include/config.h
-        cd gdk-pixbuf-loader
-        cl /Fe:pixbufloader-svg /MD /I$env:LIBRSVG_PATH/include /I$env:INSTALL_PATH/include /I$env:INSTALL_PATH/include/gtk-4.0 /I$env:INSTALL_PATH/include/pango-1.0 /I$env:INSTALL_PATH/include/glib-2.0 /I$env:INSTALL_PATH/lib/glib-2.0/include /I$env:INSTALL_PATH/include/cairo /I$env:INSTALL_PATH/include/gdk-pixbuf-2.0 /I$env:INSTALL_PATH/include/graphene-1.0 /I$env:INSTALL_PATH/lib/graphene-1.0/include /O2 /utf-8 io-svg.c /DGDK_PIXBUF_ENABLE_BACKEND /LD gdk_pixbuf-2.0.lib glib-2.0.lib gobject-2.0.lib librsvg.lib pango-1.0.lib cairo.lib gio-2.0.lib cairo-gobject.lib pangocairo-1.0.lib xml2.lib /link /LIBPATH:$env:INSTALL_PATH/lib ws2_32.lib bcrypt.lib advapi32.lib userenv.lib
-        cp pixbufloader-svg.lib $env:INSTALL_PATH/lib/gdk-pixbuf-2.0/2.10.0/loaders
-        cp pixbufloader-svg.dll $env:INSTALL_PATH/lib/gdk-pixbuf-2.0/2.10.0/loaders
-        gdk-pixbuf-query-loaders --update-cache
+        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dpixbuf-loader=enabled -Dtests=false
+        meson install -C builddir
     # build libadwaita
     - name: Fetch and Build libadwaita
       run: |
