@@ -13,8 +13,6 @@ env:
   PKG_CONFIG_RELEASE: https://nirbheek.in/files/binaries/pkg-config/win32/pkg-config.exe
   WIN_FLEX_BISON_RELEASE: https://github.com/lexxmark/winflexbison/releases/download/v2.5.25/win_flex_bison-2.5.25.zip
   # libraries to build
-  GI_RELEASE: https://download.gnome.org/sources/gobject-introspection/1.80/gobject-introspection-1.80.1.tar.xz
-  GI: gobject-introspection-1.80.1
   LIBXML2_RELEASE: https://download.gnome.org/sources/libxml2/2.13/libxml2-2.13.0.tar.xz
   LIBXML2: libxml2-2.13.0
   LIBRSVG_RELEASE: https://download.gnome.org/sources/librsvg/2.58/librsvg-2.58.1.tar.xz
@@ -47,16 +45,6 @@ jobs:
       uses: bus1/cabuild/action/msdevshell@v1
       with:
         architecture: x64
-    # build gobject-introspecction
-    - name: Fetch and Build gobject-introspection
-      env:
-        PKG_CONFIG_PATH: ${{ github.workspace }}\${{ env.GI }}\builddir\meson-uninstalled
-      run: |
-        curl -L -O "$env:GI_RELEASE"
-        cmake -E tar xf "$env:GI.tar.xz"
-        cd "$env:GI"
-        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release
-        meson install -C builddir
     # build GTK bundle
     - name: Fetch and Build GTK
       run: |
