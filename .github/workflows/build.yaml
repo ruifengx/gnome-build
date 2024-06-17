@@ -11,14 +11,18 @@ env:
   LINK: "/LIBPATH:${{ github.workspace }}/install/lib"
   # tools: pkg-config, win_flex_bison
   PKG_CONFIG_RELEASE: https://nirbheek.in/files/binaries/pkg-config/win32/pkg-config.exe
-  WIN_FLEX_BISON_RELEASE: https://github.com/lexxmark/winflexbison/releases/download/v2.5.14/win_flex_bison-2.5.14.zip
+  WIN_FLEX_BISON_RELEASE: https://github.com/lexxmark/winflexbison/releases/download/v2.5.25/win_flex_bison-2.5.25.zip
   # libraries to build
-  GI_RELEASE: https://download.gnome.org/sources/gobject-introspection/1.72/gobject-introspection-1.72.0.tar.xz
-  GI: gobject-introspection-1.72.0
-  LIBXML2_RELEASE: https://download.gnome.org/sources/libxml2/2.9/libxml2-2.9.13.tar.xz
-  LIBXML2: libxml2-2.9.13
-  LIBRSVG_RELEASE: https://download.gnome.org/sources/librsvg/2.54/librsvg-2.54.0.tar.xz
-  LIBRSVG: librsvg-2.54.0
+  GI_RELEASE: https://download.gnome.org/sources/gobject-introspection/1.80/gobject-introspection-1.80.1.tar.xz
+  GI: gobject-introspection-1.80.1
+  LIBXML2_RELEASE: https://download.gnome.org/sources/libxml2/2.13/libxml2-2.13.0.tar.xz
+  LIBXML2: libxml2-2.13.0
+  LIBRSVG_RELEASE: https://download.gnome.org/sources/librsvg/2.58/librsvg-2.58.1.tar.xz
+  LIBRSVG: librsvg-2.58.1
+  GTK_RELEASE: https://download.gnome.org/sources/gtk/4.15/gtk-4.15.1.tar.xz
+  GTK: gtk-4.15.1
+  LIBADWAITA_RELEASE: https://download.gnome.org/sources/libadwaita/1.5/libadwaita-1.5.1.tar.xz
+  LIBADWAITA: libadwaita-1.5.1
 
 jobs:
   build:
@@ -26,9 +30,8 @@ jobs:
     runs-on: windows-latest
     steps:
     # tools setup: meson, pkg-config, win_flex_bison, MSVC
-    # .. force meson 0.58.2 here because this is the version in gi's CI
-    - name: Setup Meson 0.58.2
-      run: pip install --upgrade meson==0.58.2 ninja
+    - name: Setup Meson latest
+      run: pip install --upgrade meson ninja
     - name: Setup pkg-config
       run: |
         mkdir tools
@@ -54,13 +57,12 @@ jobs:
         cd "$env:GI"
         meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release
         meson install -C builddir
-    # Upgrade Meson, as required by GTK
-    - name: Setup Meson latest
-      run: pip install --upgrade meson ninja
     # build GTK bundle
     - name: Fetch and Build GTK
       run: |
-        git clone https://gitlab.gnome.org/GNOME/gtk.git --depth 1 && cd gtk
+        curl -L -O "$env:GTK_RELEASE"
+        cmake -E tar xf "$env:GTK.tar.xz"
+        cd "$env:GTK"
         meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dbuild-tests=false -Dmedia-gstreamer=disabled
         meson install -C builddir
     # build librsvg
@@ -93,7 +95,9 @@ jobs:
     # build libadwaita
     - name: Fetch and Build libadwaita
       run: |
-        git clone https://gitlab.gnome.org/GNOME/libadwaita.git --depth 1 && cd libadwaita
+        curl -L -O "$env:LIBADWAITA_RELEASE"
+        cmake -E tar xf "$env:LIBADWAITA.tar.xz"
+        cd "$env:LIBADWAITA"
         meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dvapi=false
         meson install -C builddir
     # finish build and upload artifact
