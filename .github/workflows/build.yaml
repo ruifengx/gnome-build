@@ -63,7 +63,7 @@ jobs:
         curl -L -O "$env:GTK_RELEASE"
         cmake -E tar xf "$env:GTK.tar.xz"
         cd "$env:GTK"
-        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dbuild-tests=false -Dmedia-gstreamer=disabled
+        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dbuild-tests=false -Dmedia-gstreamer=disabled -Dvulkan=disabled
         meson install -C builddir
     # build librsvg
     # .. build libxml2
