@@ -8,17 +8,16 @@ env:
   PKG_CONFIG_PATH: ${{ github.workspace }}/install/lib/pkgconfig
   INCLUDE: ${{ github.workspace }}/install/include
   LIBPATH: ${{ github.workspace }}/install/lib
-  LINK: "bcrypt.lib /LIBPATH:${{ github.workspace }}/install/lib"
+  LINK: "/LIBPATH:${{ github.workspace }}/install/lib"
   # tools: pkg-config, win_flex_bison
   PKG_CONFIG_RELEASE: https://nirbheek.in/files/binaries/pkg-config/win32/pkg-config.exe
   WIN_FLEX_BISON_RELEASE: https://github.com/lexxmark/winflexbison/releases/download/v2.5.25/win_flex_bison-2.5.25.zip
+  CARGO_CBUILD_RELEASE: https://github.com/lu-zero/cargo-c/releases/download/v0.10.1/cargo-c-windows-msvc.zip
   # libraries to build
   FREETYPE2_RELEASE: https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz
   FREETYPE2: freetype-2.13.2
   LIBXML2_RELEASE: https://download.gnome.org/sources/libxml2/2.13/libxml2-2.13.0.tar.xz
   LIBXML2: libxml2-2.13.0
-  LIBRSVG_RELEASE: https://download.gnome.org/sources/librsvg/2.58/librsvg-2.58.1.tar.xz
-  LIBRSVG: librsvg-2.58.1
   GTK_RELEASE: https://download.gnome.org/sources/gtk/4.15/gtk-4.15.1.tar.xz
   GTK: gtk-4.15.1
   LIBADWAITA_RELEASE: https://download.gnome.org/sources/libadwaita/1.5/libadwaita-1.5.1.tar.xz
@@ -48,6 +47,11 @@ jobs:
     # librsvg expects MSVC-flavoured Rust
     - name: Setup Rust Toolchain
       uses: dtolnay/rust-toolchain@stable
+    - name: Setup cargo-cbuild
+      run: |
+        curl -L "$env:CARGO_CBUILD_RELEASE" -o tools/cargo-c.zip
+        python -m zipfile -e tools/cargo-c.zip tools/cargo-c
+        echo "$env:TOOLS_PATH/cargo-c" >> $env:GITHUB_PATH
     # build GTK bundle
     - name: Fetch and Build GTK
       run: |
@@ -78,10 +82,10 @@ jobs:
     # .. build librsvg
     - name: Fetch and Build librsvg
       run: |
-        curl -L -O "$env:LIBRSVG_RELEASE"
-        cmake -E tar xf "$env:LIBRSVG.tar.xz"
-        cd "$env:LIBRSVG/win32"
-        nmake /f Makefile.vc install CFG=release PREFIX="$env:INSTALL_PATH" RUSTUP=rustup CARGO=cargo
+        git clone https://gitlab.gnome.org/GNOME/librsvg.git
+        cd librsvg
+        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dpixbuf-loader=enabled -Dtests=false
+        meson install -C builddir
     # build libadwaita
     - name: Fetch and Build libadwaita
       run: |
