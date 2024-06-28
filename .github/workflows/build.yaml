@@ -8,7 +8,7 @@ env:
   PKG_CONFIG_PATH: ${{ github.workspace }}/install/lib/pkgconfig
   INCLUDE: ${{ github.workspace }}/install/include
   LIBPATH: ${{ github.workspace }}/install/lib
-  LINK: "/LIBPATH:${{ github.workspace }}/install/lib"
+  LINK: "bcrypt.lib /LIBPATH:${{ github.workspace }}/install/lib"
   # tools: pkg-config, win_flex_bison
   PKG_CONFIG_RELEASE: https://nirbheek.in/files/binaries/pkg-config/win32/pkg-config.exe
   WIN_FLEX_BISON_RELEASE: https://github.com/lexxmark/winflexbison/releases/download/v2.5.25/win_flex_bison-2.5.25.zip
