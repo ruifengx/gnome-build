@@ -79,9 +79,8 @@ jobs:
       run: |
         curl -L -O "$env:LIBRSVG_RELEASE"
         cmake -E tar xf "$env:LIBRSVG.tar.xz"
-        cd "$env:LIBRSVG"
-        meson setup builddir --prefix="$env:INSTALL_PATH" --buildtype=release -Dpixbuf-loader=enabled -Dtests=false
-        meson install -C builddir
+        cd "$env:LIBRSVG/win32"
+        nmake /f Makefile.vc install CFG=release PREFIX="$env:INSTALL_PATH"
     # build libadwaita
     - name: Fetch and Build libadwaita
       run: |
