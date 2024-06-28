@@ -44,9 +44,10 @@ jobs:
         python -m zipfile -e tools/win_flex_bison.zip tools/win_flex_bison
         echo "$env:TOOLS_PATH/win_flex_bison" >> $env:GITHUB_PATH
     - name: Prepare MSVC
-      uses: bus1/cabuild/action/msdevshell@v1
-      with:
-        architecture: x64
+      uses: ilammy/msvc-dev-cmd@v1
+    # librsvg expects MSVC-flavoured Rust
+    - name: Setup Rust Toolchain
+      uses: dtolnay/rust-toolchain@stable
     # build GTK bundle
     - name: Fetch and Build GTK
       run: |
@@ -80,7 +81,7 @@ jobs:
         curl -L -O "$env:LIBRSVG_RELEASE"
         cmake -E tar xf "$env:LIBRSVG.tar.xz"
         cd "$env:LIBRSVG/win32"
-        nmake /f Makefile.vc install CFG=release PREFIX="$env:INSTALL_PATH"
+        nmake /f Makefile.vc install CFG=release PREFIX="$env:INSTALL_PATH" RUSTUP=rustup CARGO=cargo
     # build libadwaita
     - name: Fetch and Build libadwaita
       run: |
